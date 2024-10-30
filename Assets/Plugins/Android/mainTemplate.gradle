@@ -2,39 +2,45 @@ apply plugin: 'com.android.library'
 apply from: '../shared/keepUnitySymbols.gradle'
 **APPLY_PLUGINS**
 
-dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2'
-    /* ADD THESE LINES TO YOUR GRADLE DEPENDENCIES SECTION */
-    implementation 'com.google.mlkit:barcode-scanning:17.3.0'
-    implementation 'com.google.code.gson:gson:2.11.0'
-    /* ADD THESE LINES TO YOUR GRADLE DEPENDENCIES SECTION */
-    **DEPS**}
+        dependencies {
+
+
+
+            /* ADD THESE LINES TO YOUR GRADLE DEPENDENCIES SECTION */
+            implementation 'androidx.appcompat:appcompat:1.6.1'
+            implementation 'com.google.mlkit:barcode-scanning:17.3.0'
+            implementation 'com.google.code.gson:gson:2.11.0'
+            /* ADD THESE LINES TO YOUR GRADLE DEPENDENCIES SECTION */
+
+
+
+            implementation fileTree(dir: 'libs', include: ['*.jar'])
+            **DEPS**}
 
 android {
-    ndkVersion "**NDKVERSION**"
     namespace "com.unity3d.player"
     ndkPath "**NDKPATH**"
+    ndkVersion "**NDKVERSION**"
+
     compileSdk **APIVERSION**
-    buildToolsVersion '**BUILDTOOLS**'
+            buildToolsVersion = "**BUILDTOOLS**"
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     defaultConfig {
-**DEFAULT_CONFIG_SETUP**
         minSdk **MINSDK**
-        targetSdk **TARGETSDK**
-        ndk {
-            debugSymbolLevel **DEBUGSYMBOLLEVEL**
-            abiFilters **ABIFILTERS**
-        }
+                targetSdk **TARGETSDK**
+                ndk {
+                    abiFilters **ABIFILTERS**
+                            debugSymbolLevel **DEBUGSYMBOLLEVEL**
+                }
         versionCode **VERSIONCODE**
-        versionName '**VERSIONNAME**'
+                versionName '**VERSIONNAME**'
         consumerProguardFiles 'proguard-unity.txt'**USER_PROGUARD**
+                **DEFAULT_CONFIG_SETUP**
     }
 
     lint {
@@ -47,5 +53,5 @@ android {
     }**PACKAGING**
 }
 **IL_CPP_BUILD_SETUP**
-**SOURCE_BUILD_SETUP**
-**EXTERNAL_SOURCES**
+        **SOURCE_BUILD_SETUP**
+        **EXTERNAL_SOURCES**
