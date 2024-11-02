@@ -1,0 +1,14 @@
+{
+    "code": [
+      "RunYOLO.cs"
+    ],
+    "models": [
+        "yolov7-tiny.sentis"
+    ],
+    "data":[
+        "classes.txt"
+    ],
+    "version":[
+         "1.4.0-pre.3"
+    ]
+}
