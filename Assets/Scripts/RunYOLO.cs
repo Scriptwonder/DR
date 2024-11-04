@@ -4,17 +4,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
 
-/*
- *  YOLO inference script
- *  =====================
- * 
- * Place this script on the Main Camera.
- * 
- * Place the yolov7-tiny.sentis file and a *.mp4 video file in the Assets/StreamingAssets folder
- * 
- */
-
-
 public class RunYOLO : MonoBehaviour
 {
     public ModelAsset modelAsset; 
@@ -135,9 +124,9 @@ public class RunYOLO : MonoBehaviour
         float scaleX = displayWidth / imageWidth;
         float scaleY = displayHeight / imageHeight;
 
-
         int foundBoxes = output.shape[0];
-        //Debug.Log(foundBoxes + " " + output.shape[1] + " " );
+
+
         //Draw the bounding boxes
         for (int n = 0; n < foundBoxes; n++)
         {
@@ -152,6 +141,13 @@ public class RunYOLO : MonoBehaviour
             };
             DrawBox(box, n);
         }
+
+        //filter the bounding boxes
+
+
+        //diminish the selected boxes
+
+
     }
 
     public void DrawBox(BoundingBox box, int id)
