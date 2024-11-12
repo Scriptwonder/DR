@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 using Unity.Sentis;
@@ -65,13 +66,21 @@ public class RunYOLOs : MonoBehaviour
 
         targetRT = new RenderTexture(imageWidth, imageHeight, 0);
         engine = new Worker(runtimeModel, BackendType.GPUCompute);
-        runModel();
+
+        
+        //runModel();
+        StartCoroutine(runModelCoroutine());
     }
 
     // Update is called once per frame
     void Update()
     {
         
+    }
+
+    private IEnumerator runModelCoroutine() {
+        yield return new WaitForSeconds(10f);
+        runModel();
     }
 
     public void runModel() {
@@ -109,7 +118,13 @@ public class RunYOLOs : MonoBehaviour
                 label = labels[(int)output[n, 5]],
                 confidence = Mathf.FloorToInt(output[n, 6] * 100 + 0.5f)
             };
-            DrawBox(box, n);
+            Debug.Log(box.label);
+            //choose whether to draw or not based on the LLM result
+            if (!LLManager.Instance.FindLabelIndex(box.label)) {
+                DrawBox(box, n);
+            } else {
+                continue;
+            }
         }
         //outputImage = Tensor2Tex();
     }

@@ -1,0 +1,85 @@
+//from @TudorJude at https://github.com/oculus-samples/Unity-DepthAPI/issues/49
+
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+struct RaycastResult {
+    float3 Result[2];//world-space and normal
+};
+
+StructuredBuffer<float2> RaycastRequests; //uv coord
+RWStructuredBuffer<RaycastResult> RaycastResults;
+
+Texture2DArray<float> _EnvironmentDepthTexture;
+
+float4x4 _EnvironmentDepthReprojectionMatrices[2]; //screen to texture
+float4 _EnvironmentDepthZBufferParams;
+float4 _ZBufferParams;
+float4x4 unity_StereoMatrixInvVP[2]; //inverse view-projection matrices
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+//RWTexture2D<float4> Result;
+
+float SampleEnvironmentDepth(const float2 uv, const int slice) {
+    const float4 reprojectedUV =
+        mul(_EnvironmentDepthReprojectionMatrices[slice], float4(uv.x, uv.y, 0.0, 1.0));
+    const uint3 depthtextureuv = uint3(reprojectedUV.x * 512, reprojectedUV.y * 512, 0); //texture space
+  
+    // Get the depth in eye space
+    const float inputDepthEye = _EnvironmentDepthTexture[depthtextureuv];
+  
+    // Convert from eye-space depth to normalized device coordinates (NDC)
+    const float inputDepthNdc = inputDepthEye * 2.0 - 1.0;
+    const float envLinearDepth = (1.0f / (inputDepthNdc + _EnvironmentDepthZBufferParams.y)) * _EnvironmentDepthZBufferParams.x;
+  
+    // Convert to camera-space depth
+    float envDepth = (1 - envLinearDepth * _ZBufferParams.w) / (envLinearDepth * _ZBufferParams.z);
+  
+    return envDepth;
+}
+
+float4 ComputeClipSpacePosition(float2 positionNDC, float deviceDepth) {
+    float4 positionCS = float4(positionNDC * 2.0 - 1.0, deviceDepth, 1.0);
+    return positionCS;
+}
+
+float3 ComputeWorldSpacePosition(float2 positionNDC, float deviceDepth, float4x4 invViewProjMatrix) {
+    float4 positionCS  = ComputeClipSpacePosition(positionNDC, deviceDepth);
+    float4 hpositionWS = mul(invViewProjMatrix, positionCS);
+    return hpositionWS.xyz / hpositionWS.w;
+}
+
+float3 ComputeWorldSpaceNormal(float2 uv, const int slice) {
+    float3 viewSpacePos_c = ComputeWorldSpacePosition(uv, SampleEnvironmentDepth(uv, slice), unity_StereoMatrixInvVP[slice]);
+  
+    float2 offsetTexSpace = 6.0f / 512.0f;
+  
+    float2 offsetUV = uv + float2(1.0, 0.0) * offsetTexSpace;
+    float3 viewSpacePos_r = ComputeWorldSpacePosition(offsetUV, SampleEnvironmentDepth(offsetUV, slice), unity_StereoMatrixInvVP[slice]);
+  
+    offsetUV = uv + float2(0.0, 1.0) * offsetTexSpace;
+    float3 viewSpacePos_u = ComputeWorldSpacePosition(offsetUV, SampleEnvironmentDepth(offsetUV, slice), unity_StereoMatrixInvVP[slice]);
+  
+    float3 hDeriv = viewSpacePos_r - viewSpacePos_c;
+    float3 vDeriv = viewSpacePos_u - viewSpacePos_c;
+  
+    float3 viewNormal = normalize(cross(hDeriv, vDeriv));
+  
+    return viewNormal;
+}
+  
+
+[numthreads(32,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID) {
+    const uint slice = 0;
+
+    float2 raycastPosition = RaycastRequests[id.x];
+
+    float envDepth = SampleEnvironmentDepth(raycastPosition, slice);
+    float3 worldPos = ComputeWorldSpacePosition(raycastPosition, envDepth, unity_StereoMatrixInvVP[slice]);
+
+    RaycastResults[id.x].Result[0] = float4(worldPos, envDepth);
+    RaycastResults[id.x].Result[1] = -ComputeWorldSpaceNormal(raycastPosition, slice);
+}
+

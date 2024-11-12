@@ -3,6 +3,7 @@ using Unity.Sentis;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
+using System.Collections;
 
 public class RunYOLO : MonoBehaviour
 {
@@ -75,7 +76,7 @@ public class RunYOLO : MonoBehaviour
             borderSprite = Sprite.Create(borderTexture, new Rect(0, 0, borderTexture.width, borderTexture.height), new Vector2(borderTexture.width / 2, borderTexture.height / 2));
         }
 
-        ExecuteML();
+        StartCoroutine(runModelCoroutine());
     }
     void SetupInput()
     {
@@ -85,6 +86,11 @@ public class RunYOLO : MonoBehaviour
         video.url = Application.streamingAssetsPath + "/" + videoName;
         video.isLooping = true;
         video.Play();
+    }
+
+    private IEnumerator runModelCoroutine() {
+        yield return new WaitForSeconds(10f);
+        ExecuteML();
     }
 
     private void Update()
@@ -130,22 +136,25 @@ public class RunYOLO : MonoBehaviour
         //Draw the bounding boxes
         for (int n = 0; n < foundBoxes; n++)
         {
-            var box = new BoundingBox
-            {
-                centerX = ((output[n, 1] + output[n, 3]) * scaleX - displayWidth) / 2,
-                centerY = ((output[n, 2] + output[n, 4]) * scaleY - displayHeight) / 2,
-                width = (output[n, 3] - output[n, 1]) * scaleX,
-                height = (output[n, 4] - output[n, 2]) * scaleY,
-                label = labels[(int)output[n, 5]],
-                confidence = Mathf.FloorToInt(output[n, 6] * 100 + 0.5f)
-            };
-            DrawBox(box, n);
+            //Debug.Log("Box Number is " + (int)output[n, 5]);
+            //filter the bounding boxes
+            if (!LLManager.Instance.FindLabelIndex((output[n,5]).ToString())) {
+                var box = new BoundingBox
+                {
+                    centerX = ((output[n, 1] + output[n, 3]) * scaleX - displayWidth) / 2,
+                    centerY = ((output[n, 2] + output[n, 4]) * scaleY - displayHeight) / 2,
+                    width = (output[n, 3] - output[n, 1]) * scaleX,
+                    height = (output[n, 4] - output[n, 2]) * scaleY,
+                    label = labels[(int)output[n, 5]],
+                    confidence = Mathf.FloorToInt(output[n, 6] * 100 + 0.5f)
+                };
+                DrawBox(box, n);
+            } else {
+                continue;
+            }
         }
 
-        //filter the bounding boxes
-
-
-        //diminish the selected boxes
+        //find the depth associated with each bounding box(average), and return to the Depthmanager to instantiate the dr filter.
 
 
     }

@@ -256,8 +256,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 58, y: 0.58}
-  m_SizeDelta: {x: 304.5732, y: 179.57}
+  m_AnchoredPosition: {x: 107, y: -2.6684}
+  m_SizeDelta: {x: 363.81, y: 194.72}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &368708688
 MonoBehaviour:
@@ -309,6 +309,7 @@ GameObject:
   - component: {fileID: 594924554}
   - component: {fileID: 594924555}
   - component: {fileID: 594924556}
+  - component: {fileID: 594924557}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -475,7 +476,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 594924548}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 31a164950442aa24da4e487d7e41c270, type: 3}
   m_Name: 
@@ -494,11 +495,25 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 594924548}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 963b85be03027d04cbe494a933a5e792, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &594924557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 594924548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 869d5f7ad45812342a41260f3f13e99f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentContext: Studying/Working and want to focus
+  labelsAsset: {fileID: 4900000, guid: 10d27e635fb37504fa89f9cd8300f13c, type: 3}
 --- !u!1 &1591018058
 GameObject:
   m_ObjectHideFlags: 0

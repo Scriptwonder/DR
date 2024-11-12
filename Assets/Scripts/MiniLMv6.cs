@@ -117,12 +117,18 @@ public class MiniLM : MonoBehaviour
         // );
 
         var model1 = new FunctionalGraph();
-        var input1 = model1.AddInput(model.inputs[0].dataType, model.inputs[0].shape);
-        var input2 = model1.AddInput(model.inputs[1].dataType, model.inputs[1].shape);
-        var input3 = model1.AddInput(model.inputs[2].dataType, model.inputs[2].shape);
-        Model modelWithMeanPooling1 = model1.Compile(MeanPooling(Functional.Forward(model, input1, input2, input3)[0], input2));
+        FunctionalTensor[] inputs = model1.AddInputs(model);
+        FunctionalTensor[] outputs = Functional.Forward(model, inputs);
+        //var modelWithMeanPooling = model1.Compile(MeanPooling(outputs[0], inputs[1]));
+        FunctionalTensor meanPooled = MeanPooling(outputs[0], inputs[1]);
+        var modelWithMeanPooling = model1.Compile(meanPooled);
 
-        return new Worker(modelWithMeanPooling1, backend);
+        // var input1 = model1.AddInput(model.inputs[0].dataType, model.inputs[0].shape);
+        // var input2 = model1.AddInput(model.inputs[1].dataType, model.inputs[1].shape);
+        // var input3 = model1.AddInput(model.inputs[2].dataType, model.inputs[2].shape);
+        //Model modelWithMeanPooling1 = model1.Compile(MeanPooling(Functional.Forward(model, input1, input2, input3)[0], input2));
+
+        return new Worker(modelWithMeanPooling, backend);
     }
 
     //Get average of token embeddings taking into account the attention mask
@@ -146,7 +152,9 @@ public class MiniLM : MonoBehaviour
         var model = new FunctionalGraph();
         var input1 = model.AddInput<float>(new TensorShape(1, FEATURES));
         var input2 = model.AddInput<float>(new TensorShape(1, FEATURES));
-        Model dotScoreModel = model.Compile(Functional.ReduceSum(input1 * input2, 1));
+        //Model dotScoreModel = model.Compile(Functional.ReduceSum(input1 * input2, 1));
+        FunctionalTensor reduce = Functional.ReduceSum(input1 * input2, 1);
+        Model dotScoreModel = model.Compile(reduce);
         
         return new Worker(dotScoreModel, backend);
     }
