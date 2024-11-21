@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Meta.XR.EnvironmentDepth;
 using static Unity.XR.Oculus.Utils;
 using static OVRPlugin;
+using System;
 
 //based on @TudorJude at https://github.com/oculus-samples/Unity-DepthAPI/issues/49
 
@@ -33,15 +34,24 @@ public class DepthCast : MonoBehaviour
         
     }
 
+    public Vector3 GetWorldSpaceCoordinate(Vector2 viewSpaceCoordinate)
+    {
+        // Convert view space to world space
+        EnvironmentDepthAccess.DepthRaycastResult result = DepthAccess.RaycastViewSpaceBlocking(viewSpaceCoordinate);
+        return result.Position;
+    }
+
+
+
     // Update is called once per frame
     void Update()
     {
-        if (_depthManager.IsDepthAvailable) {
-            Vector2 coord = new Vector2(0.5f, 0.5f); 
-            EnvironmentDepthAccess.DepthRaycastResult result = DepthAccess.RaycastViewSpaceBlocking(coord);
-            //Debug.Log($"Raycast result: {result.Position}, {result.Normal}");
-            //_ObjectToPlace.transform.position = result.Position;
-        }
+        // if (_depthManager.IsDepthAvailable) {
+        //     Vector2 coord = new Vector2(0.5f, 0.5f); 
+        //     EnvironmentDepthAccess.DepthRaycastResult result = DepthAccess.RaycastViewSpaceBlocking(coord);
+        //     //Debug.Log($"Raycast result: {result.Position}, {result.Normal}");
+        //     //_ObjectToPlace.transform.position = result.Position;
+        // }
         // //will be called if the user hold left hand trigger button
         // // if (OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.LTouch))
         // // {

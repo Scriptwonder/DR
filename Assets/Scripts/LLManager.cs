@@ -34,7 +34,7 @@ public class LLManager : MonoBehaviour
         {
             if (instance == null)
             {
-                instance = FindObjectOfType<LLManager>();
+                instance = FindFirstObjectByType<LLManager>();
                 
                 // Create new instance if none exists
                 if (instance == null)
@@ -55,8 +55,13 @@ public class LLManager : MonoBehaviour
     
     }
 
+    void Start()
+    {
+        //Setup();
+    }
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    async void Start()
+    async void Setup()
     {
         var api = new OpenAIClient(auth);
         model = await api.ModelsEndpoint.GetModelDetailsAsync("gpt-4o");

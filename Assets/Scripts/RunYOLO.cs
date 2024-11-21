@@ -11,7 +11,7 @@ public class RunYOLO : MonoBehaviour
     //const string modelName = "yolov8m-oiv7.sentis";
     const string modelName = "yolov7-tiny.sentis";
     // Change this to the name of the video you put in StreamingAssets folder:
-    const string videoName = "giraffe.mp4";
+    //const string videoName = "giraffe.mp4";
 
     public RawImage inputImage;
     // Link the classes.txt here:
@@ -35,19 +35,14 @@ public class RunYOLO : MonoBehaviour
     private const int imageWidth = 640;
     private const int imageHeight = 640;
 
+    private const int questWidth = 4128;
+    private const int questHeight = 2208; //based on Wikipedia
+
     private VideoPlayer video;
 
     List<GameObject> boxPool = new List<GameObject>();
     //bounding box data
-    public struct BoundingBox
-    {
-        public float centerX;
-        public float centerY;
-        public float width;
-        public float height;
-        public string label;
-        public float confidence;
-    }
+    
 
     void Start()
     {
@@ -69,49 +64,51 @@ public class RunYOLO : MonoBehaviour
         //Create engine to run model
         engine = new Worker(model, backend);
 
-        SetupInput();
+        //SetupInput();
 
         if (borderSprite == null)
         {
             borderSprite = Sprite.Create(borderTexture, new Rect(0, 0, borderTexture.width, borderTexture.height), new Vector2(borderTexture.width / 2, borderTexture.height / 2));
         }
 
-        StartCoroutine(runModelCoroutine());
+        //StartCoroutine(runModelCoroutine());
     }
-    void SetupInput()
-    {
-        video = gameObject.AddComponent<VideoPlayer>();
-        video.renderMode = VideoRenderMode.APIOnly;
-        video.source = VideoSource.Url;
-        video.url = Application.streamingAssetsPath + "/" + videoName;
-        video.isLooping = true;
-        video.Play();
-    }
+    // void SetupInput()
+    // {
+    //     video = gameObject.AddComponent<VideoPlayer>();
+    //     video.renderMode = VideoRenderMode.APIOnly;
+    //     video.source = VideoSource.Url;
+    //     video.url = Application.streamingAssetsPath + "/" + videoName;
+    //     video.isLooping = true;
+    //     video.Play();
+    // }
 
     private IEnumerator runModelCoroutine() {
         yield return new WaitForSeconds(10f);
         ExecuteML();
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            Application.Quit();
-        }
+    public void ExecuteML(Texture2D input) {
+        inputImage.texture = input;
+        ExecuteML();
     }
 
     public void ExecuteML()
     {
         ClearAnnotations();
 
-        if (video && video.texture)
-        {
-            float aspect = video.width * 1f / video.height;
-            Graphics.Blit(video.texture, targetRT, new Vector2(1f / aspect, 1), new Vector2(0, 0));
-            displayImage.texture = targetRT;
-        }
-        else if (inputImage) {
+        // if (video && video.texture)
+        // {
+        //     float aspect = video.width * 1f / video.height;
+        //     Graphics.Blit(video.texture, targetRT, new Vector2(1f / aspect, 1), new Vector2(0, 0));
+        //     displayImage.texture = targetRT;
+        // }
+        // else if (inputImage) {
+        //     float aspect = inputImage.texture.width * 1f / inputImage.texture.height;
+        //     Graphics.Blit(inputImage.texture, targetRT, new Vector2(1f / aspect, 1), new Vector2(0, 0));
+        //     displayImage.texture = inputImage.texture;
+        // }
+        if (inputImage) {
             float aspect = inputImage.texture.width * 1f / inputImage.texture.height;
             Graphics.Blit(inputImage.texture, targetRT, new Vector2(1f / aspect, 1), new Vector2(0, 0));
             displayImage.texture = inputImage.texture;
@@ -132,31 +129,62 @@ public class RunYOLO : MonoBehaviour
 
         int foundBoxes = output.shape[0];
 
+        float scaleXquest = (float)questWidth / imageWidth;
+        float scaleYquest = (float)questHeight / imageHeight;
+
 
         //Draw the bounding boxes
+        // for (int n = 0; n < foundBoxes; n++)
+        // {
+        //     //Debug.Log("Box Number is " + (int)output[n, 5]);
+        //     //filter the bounding boxes
+        //     if (!LLManager.Instance.FindLabelIndex((output[n,5]).ToString())) {
+        //         var box = new BoundingBox
+        //         {
+        //             centerX = ((output[n, 1] + output[n, 3]) * scaleX - displayWidth) / 2,
+        //             centerY = ((output[n, 2] + output[n, 4]) * scaleY - displayHeight) / 2,
+        //             width = (output[n, 3] - output[n, 1]) * scaleX,
+        //             height = (output[n, 4] - output[n, 2]) * scaleY,
+        //             label = labels[(int)output[n, 5]],
+        //             confidence = Mathf.FloorToInt(output[n, 6] * 100 + 0.5f)
+        //         };
+        //         DrawBox(box, n);
+        //     } else {
+        //         continue;
+        //     }
+        // }
+
         for (int n = 0; n < foundBoxes; n++)
         {
             //Debug.Log("Box Number is " + (int)output[n, 5]);
             //filter the bounding boxes
-            if (!LLManager.Instance.FindLabelIndex((output[n,5]).ToString())) {
-                var box = new BoundingBox
-                {
-                    centerX = ((output[n, 1] + output[n, 3]) * scaleX - displayWidth) / 2,
-                    centerY = ((output[n, 2] + output[n, 4]) * scaleY - displayHeight) / 2,
-                    width = (output[n, 3] - output[n, 1]) * scaleX,
-                    height = (output[n, 4] - output[n, 2]) * scaleY,
-                    label = labels[(int)output[n, 5]],
-                    confidence = Mathf.FloorToInt(output[n, 6] * 100 + 0.5f)
-                };
-                DrawBox(box, n);
-            } else {
-                continue;
-            }
+            Debug.Log(scaleXquest + " " + scaleYquest);
+            Debug.Log(questWidth + " " + questHeight);
+            Debug.Log(output[n, 1] + " " + output[n, 3] + " " + output[n, 2] + " " + output[n, 4]);
+
+            // var box = new BoundingBox
+            // {
+            //     centerX = ((output[n, 1] + output[n, 3]) * scaleX - displayWidth) / 2,
+            //     centerY = ((output[n, 2] + output[n, 4]) * scaleY - displayHeight) / 2,
+            //     width = (output[n, 3] - output[n, 1]) * scaleX,
+            //     height = (output[n, 4] - output[n, 2]) * scaleY,
+            //     label = labels[(int)output[n, 5]],
+            //     confidence = Mathf.FloorToInt(output[n, 6] * 100 + 0.5f)
+            // };
+            var box = new BoundingBox
+            {
+                centerX = ((output[n, 1] + output[n, 3]) * scaleXquest - questWidth) / 2,
+                centerY = ((output[n, 2] + output[n, 4]) * scaleYquest - questHeight) / 2,
+                width = (output[n, 3] - output[n, 1]) * scaleXquest,
+                height = (output[n, 4] - output[n, 2]) * scaleYquest,
+                label = labels[(int)output[n, 5]],
+                confidence = Mathf.FloorToInt(output[n, 6] * 100 + 0.5f)
+            };
+            //DrawBox(box, n);
+            Debug.Log(box.centerX + " " + box.centerY + " " + box.width + " " + box.height);
+            DRmanager.Instance.drawBox(box, n);
+            DrawBox(box, n);
         }
-
-        //find the depth associated with each bounding box(average), and return to the Depthmanager to instantiate the dr filter.
-
-
     }
 
     public void DrawBox(BoundingBox box, int id)

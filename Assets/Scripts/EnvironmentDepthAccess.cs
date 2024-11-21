@@ -108,7 +108,7 @@ public class EnvironmentDepthAccess : MonoBehaviour
 
     private void OnDestroy()
     {
-        _resultsCB.Release();
+        _resultsCB?.Release();
     }
 
     internal static Matrix4x4 Calculate3DOFReprojection(EnvironmentDepthFrameDesc frameDesc, Fovf fov)

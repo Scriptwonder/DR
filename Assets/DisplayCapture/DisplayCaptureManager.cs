@@ -78,6 +78,16 @@ namespace Anaglyph.DisplayCapture
 			bufferSize = Size.x * Size.y * 4; // RGBA_8888 format: 4 bytes per pixel
 		}
 
+		private void Update()
+		{
+			//start screen capture if touched the button A
+			if (OVRInput.GetDown(OVRInput.Button.One))
+			{
+				Debug.Log("Start Screen Capture");
+				StartScreenCapture();
+			}
+		}
+
 		public void StartScreenCapture()
 		{
 			androidInterface.RequestCapture();
@@ -107,6 +117,9 @@ namespace Anaglyph.DisplayCapture
 			if (imageData == default) return;
 			screenTexture.LoadRawTextureData((IntPtr)imageData, bufferSize);
 			screenTexture.Apply();
+
+			//send the screenTexture to DRManager;
+			//DRmanager.Instance.CopyTextureToScreen(screenTexture);
 
 			if (flipTextureOnGPU)
 			{
