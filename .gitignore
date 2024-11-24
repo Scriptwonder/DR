@@ -71,3 +71,7 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 /.utmp
+Assets/StreamingAssets/giraffe1.mp4.meta
+Assets/StreamingAssets/giraffe1.mp4
+Assets/StreamingAssets/giraffes.mp4
+Assets/StreamingAssets/giraffes.mp4.meta

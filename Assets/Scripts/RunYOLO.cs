@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
 using System.Collections;
+using UnityEngine.Events;
 
 public class RunYOLO : MonoBehaviour
 {
@@ -41,10 +42,12 @@ public class RunYOLO : MonoBehaviour
     private VideoPlayer video;
 
     List<GameObject> boxPool = new List<GameObject>();
+
+    public UnityEvent<RenderTexture> OnNewFrameEnabled = new();
     //bounding box data
     
 
-    void Start()
+    void Setup()
     {
         //Application.targetFrameRate = 60;
         Screen.orientation = ScreenOrientation.LandscapeLeft;
@@ -53,13 +56,15 @@ public class RunYOLO : MonoBehaviour
         labels = labelsAsset.text.Split('\n');
 
         //Load model
-        //model = ModelLoader.Load(modelAsset);
-        model = ModelLoader.Load(Application.streamingAssetsPath + "/" + modelName);
-
-        targetRT = new RenderTexture(imageWidth, imageHeight, 0);
+        model = ModelLoader.Load(modelAsset);
+        //model = ModelLoader.Load(Application.streamingAssetsPath + "/" + modelName);
 
         //Create image to display video
         displayLocation = displayImage.transform;
+
+        targetRT = new RenderTexture(imageWidth, imageHeight, 0);
+        targetRT.enableRandomWrite = true;
+        targetRT.Create();
 
         //Create engine to run model
         engine = new Worker(model, backend);
@@ -90,13 +95,13 @@ public class RunYOLO : MonoBehaviour
 
     public void ExecuteML(Texture2D input) {
         inputImage.texture = input;
+        Setup();
         ExecuteML();
     }
 
     public void ExecuteML()
     {
         ClearAnnotations();
-
         // if (video && video.texture)
         // {
         //     float aspect = video.width * 1f / video.height;
@@ -108,18 +113,33 @@ public class RunYOLO : MonoBehaviour
         //     Graphics.Blit(inputImage.texture, targetRT, new Vector2(1f / aspect, 1), new Vector2(0, 0));
         //     displayImage.texture = inputImage.texture;
         // }
-        if (inputImage) {
+        if (inputImage.texture) {
             float aspect = inputImage.texture.width * 1f / inputImage.texture.height;
             Graphics.Blit(inputImage.texture, targetRT, new Vector2(1f / aspect, 1), new Vector2(0, 0));
             displayImage.texture = inputImage.texture;
         }
-
-        Tensor<float> input = TextureConverter.ToTensor(targetRT, imageWidth, imageHeight, 3);
-        engine.Schedule(input);
+        //OnNewFrameEnabled.Invoke(inputImage.texture as RenderTexture);
+        // if (targetRT == null) {
+        //     DRmanager.Instance.text.text += "TargetRT is null";
+        // }
+        // if (targetRT.IsCreated() == false) {
+        //     DRmanager.Instance.text.text += "TargetRT is not created";
+        // }
+        // if (targetRT.enableRandomWrite == false) {
+        //     DRmanager.Instance.text.text += "TargetRT is not random write";
+        // }
+        try {
+            Tensor<float> input = TextureConverter.ToTensor(targetRT, imageWidth, imageHeight, 3);
+            engine.Schedule(input);
+        }
+        catch (System.Exception e) {
+            DRmanager.Instance.text.text += e.Message;
+        }
 
         //Read output tensors
         var output1 = engine.PeekOutput() as Tensor<float>;
         var output = output1.ReadbackAndClone();
+        output1.Dispose();
 
         float displayWidth = displayImage.rectTransform.rect.width;
         float displayHeight = displayImage.rectTransform.rect.height;
@@ -131,6 +151,8 @@ public class RunYOLO : MonoBehaviour
 
         float scaleXquest = (float)questWidth / imageWidth;
         float scaleYquest = (float)questHeight / imageHeight;
+
+        DRmanager.Instance.text.text += "Found Boxes: " + foundBoxes + "\n";
 
 
         //Draw the bounding boxes
@@ -158,9 +180,9 @@ public class RunYOLO : MonoBehaviour
         {
             //Debug.Log("Box Number is " + (int)output[n, 5]);
             //filter the bounding boxes
-            Debug.Log(scaleXquest + " " + scaleYquest);
-            Debug.Log(questWidth + " " + questHeight);
-            Debug.Log(output[n, 1] + " " + output[n, 3] + " " + output[n, 2] + " " + output[n, 4]);
+            // Debug.Log(scaleXquest + " " + scaleYquest);
+            // Debug.Log(questWidth + " " + questHeight);
+            // Debug.Log(output[n, 1] + " " + output[n, 3] + " " + output[n, 2] + " " + output[n, 4]);
 
             // var box = new BoundingBox
             // {
@@ -181,10 +203,11 @@ public class RunYOLO : MonoBehaviour
                 confidence = Mathf.FloorToInt(output[n, 6] * 100 + 0.5f)
             };
             //DrawBox(box, n);
-            Debug.Log(box.centerX + " " + box.centerY + " " + box.width + " " + box.height);
+            //Debug.Log(box.centerX + " " + box.centerY + " " + box.width + " " + box.height);
             DRmanager.Instance.drawBox(box, n);
             DrawBox(box, n);
         }
+        output.Dispose();
     }
 
     public void DrawBox(BoundingBox box, int id)
@@ -215,7 +238,6 @@ public class RunYOLO : MonoBehaviour
     public GameObject CreateNewBox(Color color)
     {
         //Create the box and set image
-
         var panel = new GameObject("ObjectBox");
         panel.AddComponent<CanvasRenderer>();
         Image img = panel.AddComponent<Image>();
@@ -225,7 +247,6 @@ public class RunYOLO : MonoBehaviour
         panel.transform.SetParent(displayLocation, false);
 
         //Create the label
-
         var text = new GameObject("ObjectLabel");
         text.AddComponent<CanvasRenderer>();
         text.transform.SetParent(panel.transform, false);
