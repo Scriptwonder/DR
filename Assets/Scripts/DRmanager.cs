@@ -1,6 +1,9 @@
+using System.Data.Common;
 using Anaglyph.DisplayCapture;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Android;
+using UnityEngine.Events;
 
 public struct BoundingBox
 {
@@ -29,6 +32,12 @@ public class DRmanager : MonoBehaviour
     private Camera cam;
     private GameObject parentTrans;
 
+    public TMP_Text text;
+
+    
+
+    public UnityEvent<Texture2D> OnNewFrameEnabled = new();
+
     public static DRmanager Instance
     {
         get
@@ -40,8 +49,9 @@ public class DRmanager : MonoBehaviour
                 // Create new instance if none exists
                 if (instance == null)
                 {
-                    GameObject go = new GameObject("DRmanager");
-                    instance = go.AddComponent<DRmanager>();
+                    Debug.LogError("No instance of DRmanager found in scene. Please add one to the scene.");   
+                    // GameObject go = new GameObject("DRmanager");
+                    // instance = go.AddComponent<DRmanager>();
                 }
             }
             return instance;
@@ -50,18 +60,34 @@ public class DRmanager : MonoBehaviour
 
     void Awake()
     {
-        instance = this;
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else if (instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        cam = Camera.main;
+        if (cam == null)
+        {
+            Debug.LogError("Main camera not found. Make sure a camera is tagged as 'MainCamera'.");
+        }
+
+        if (parentTrans == null)
+        {
+            parentTrans = new GameObject("BoundingBoxes");
+        }
+
+        DontDestroyOnLoad(gameObject);
         
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        cam = Camera.main;
-        if (parentTrans == null)
-        {
-            parentTrans = new GameObject("BoundingBoxes");
-        }
     }
 
     // Update is called once per frame
@@ -70,13 +96,19 @@ public class DRmanager : MonoBehaviour
         if (OVRInput.GetDown(OVRInput.Button.One) || Input.GetKeyDown(KeyCode.Space))
 			{
 				Debug.Log("Start Screen Capture");
-				RunYOLO(temp);
+                if (temp != null) {
+				    RunYOLO(temp);
+                } else {
+                    Debug.Log("Temp is null");
+                }
 			}
     }
 
     public void pipeline() {
         //first get the texture from the MediaProjector
         CopyTextureToScreen(DisplayCaptureManager.Instance.ScreenCaptureTexture);
+
+        OnNewFrameEnabled.Invoke(screenTexture);
 
         //run YOLO Model with the texture, will require possible down sampling
         RunYOLO(screenTexture);
@@ -90,14 +122,16 @@ public class DRmanager : MonoBehaviour
         screenTexture = texture;
     }
 
-    public void RunYOLO()
+    public void RunYOLO(Texture2D texture = null)
     {
-        runYOLO.ExecuteML();
-    }
-
-    public void RunYOLO(Texture2D texture)
-    {
-        runYOLO.ExecuteML(texture);
+        if (texture != null)
+        {
+            runYOLO.ExecuteML(texture);
+        }
+        else
+        {
+            runYOLO.ExecuteML();
+        }
     }
 
     // public void viewToWorldSpace(Vector2 viewSpaceCoordinate)
@@ -119,7 +153,7 @@ public class DRmanager : MonoBehaviour
         //Debug.Log(box.centerX/640f + " " + box.centerY/640f + " " + box.width/640f + " " + box.height/640f);
         Debug.Log(box.centerX/4128f + " " + box.centerY/2208f + " " + box.width/4128f + " " + box.height/2208f);     
         Vector3 worldCoordinate = depthCast.GetWorldSpaceCoordinate(new Vector2(box.centerX/4128f + 0.5f, -box.centerY/2208f + 0.5f));
-        GameObject panel = Instantiate(boundingBoxPrefab, new Vector3(box.centerX/4128f + cam.gameObject.transform.position.x, -box.centerY/2208f + cam.gameObject.transform.position.y, worldCoordinate.z), Quaternion.identity);
+        GameObject panel = Instantiate(boundingBoxPrefab, new Vector3(box.centerX/4128f + cam.gameObject.transform.position.x, -box.centerY/2208f + cam.gameObject.transform.position.y, worldCoordinate.z - 1.4f), Quaternion.identity);
         panel.transform.SetParent(parentTrans.transform);
         panel.name = box.label + n;
         
@@ -133,8 +167,8 @@ public class DRmanager : MonoBehaviour
         float worldHeight = box.height/2208f;
         panel.transform.localScale = new Vector3(worldWidth, worldHeight, 0.01f);
 
-
-        Debug.Log("Box " + n + " " + box.label + " drawn at " + worldCoordinate + " with size " + worldWidth + " " + worldHeight);
+        text.text += "Box " + n + " " + box.label + " drawn at " + worldCoordinate + " with size " + worldWidth + " " + worldHeight + "\n"; 
+        //Debug.Log("Box " + n + " " + box.label + " drawn at " + worldCoordinate + " with size " + worldWidth + " " + worldHeight);
 
     }
 }

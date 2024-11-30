@@ -73,3 +73,7 @@ crashlytics-build.properties
 /.utmp
 
 .vsconfig
+Assets/StreamingAssets/giraffe1.mp4.meta
+Assets/StreamingAssets/giraffe1.mp4
+Assets/StreamingAssets/giraffes.mp4
+Assets/StreamingAssets/giraffes.mp4.meta

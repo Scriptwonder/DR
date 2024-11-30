@@ -31,6 +31,8 @@ namespace Anaglyph.DisplayCapture
 		private unsafe sbyte* imageData;
 		private int bufferSize;
 
+		private bool hasStarted = false;
+
 		private class AndroidInterface
 		{
 			private AndroidJavaClass androidClass;
@@ -105,6 +107,12 @@ namespace Anaglyph.DisplayCapture
 		{
 			onStarted.Invoke();
 			imageData = androidInterface.GetByteBuffer();
+
+			GameObject ui = GameObject.Find("UI");
+			ui.SetActive(false);
+			// GameObject dr = GameObject.Find("DR");
+			// DRmanager drManager = dr.GetComponent<DRmanager>();
+			// drManager.pipeline();
 		}
 
 		private void OnPermissionDenied()
@@ -125,6 +133,14 @@ namespace Anaglyph.DisplayCapture
 			{
 				Graphics.Blit(screenTexture, flipTexture, new Vector2(1, -1), Vector2.zero);
 				Graphics.CopyTexture(flipTexture, screenTexture);
+			}
+
+            if (!hasStarted)
+			{
+				GameObject dr = GameObject.Find("DR");
+				DRmanager drManager = dr.GetComponent<DRmanager>();
+				drManager.pipeline();
+				hasStarted = true;
 			}
 
 			onNewFrame.Invoke();
