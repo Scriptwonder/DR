@@ -204,7 +204,9 @@ public class RunYOLO : MonoBehaviour
             };
             //DrawBox(box, n);
             //Debug.Log(box.centerX + " " + box.centerY + " " + box.width + " " + box.height);
-            DRmanager.Instance.drawBox(box, n);
+            if (box.label != "keyboard" || box.label != "mouse" || box.label != "tv monitor") {
+                DRmanager.Instance.drawBox(box, n);
+            }
             DrawBox(box, n);
         }
         output.Dispose();
