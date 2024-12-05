@@ -151,9 +151,9 @@ public class DRmanager : MonoBehaviour
 
         //create the bounding box graphic
         //Debug.Log(box.centerX/640f + " " + box.centerY/640f + " " + box.width/640f + " " + box.height/640f);
-        Debug.Log(box.centerX/4128f + " " + box.centerY/2208f + " " + box.width/4128f + " " + box.height/2208f);     
+        // Debug.Log(box.centerX/4128f + " " + box.centerY/2208f + " " + box.width/4128f + " " + box.height/2208f);     
         Vector3 worldCoordinate = depthCast.GetWorldSpaceCoordinate(new Vector2(box.centerX/4128f + 0.5f, -box.centerY/2208f + 0.5f));
-        GameObject panel = Instantiate(boundingBoxPrefab, new Vector3(box.centerX/4128f + cam.gameObject.transform.position.x, -box.centerY/2208f + cam.gameObject.transform.position.y, worldCoordinate.z - 1.4f), Quaternion.identity);
+        GameObject panel = Instantiate(boundingBoxPrefab, new Vector3(box.centerX/4128f + cam.gameObject.transform.position.x, -box.centerY/2208f + cam.gameObject.transform.position.y, worldCoordinate.z), Quaternion.identity);
         panel.transform.SetParent(parentTrans.transform);
         panel.name = box.label + n;
         
@@ -165,9 +165,9 @@ public class DRmanager : MonoBehaviour
 
         float worldWidth = box.width/4128f;
         float worldHeight = box.height/2208f;
-        panel.transform.localScale = new Vector3(worldWidth, worldHeight, 0.01f);
+        panel.transform.localScale = new Vector3(worldWidth * 3, worldHeight * 3, 0.01f);
 
-        text.text += "Box " + n + " " + box.label + " drawn at " + worldCoordinate + " with size " + worldWidth + " " + worldHeight + "\n"; 
+        // text.text += "Box " + n + " " + box.label + " drawn at " + worldCoordinate + " with size " + worldWidth + " " + worldHeight + "\n"; 
         //Debug.Log("Box " + n + " " + box.label + " drawn at " + worldCoordinate + " with size " + worldWidth + " " + worldHeight);
 
     }

@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.Video;
 using System.Collections;
 using UnityEngine.Events;
+using TMPro;
 
 public class RunYOLO : MonoBehaviour
 {
@@ -45,6 +46,8 @@ public class RunYOLO : MonoBehaviour
 
     public UnityEvent<RenderTexture> OnNewFrameEnabled = new();
     //bounding box data
+
+    public TMP_Text text;
     
 
     void Setup()
@@ -204,10 +207,12 @@ public class RunYOLO : MonoBehaviour
             };
             //DrawBox(box, n);
             //Debug.Log(box.centerX + " " + box.centerY + " " + box.width + " " + box.height);
+            text.text += "Box label: " + box.label + " length: " + box.label.Length + "\n";  
             if (box.label != "keyboard" || box.label != "mouse" || box.label != "tv monitor") {
+                text.text += "draw\n"; 
                 DRmanager.Instance.drawBox(box, n);
             }
-            DrawBox(box, n);
+            // DrawBox(box, n);
         }
         output.Dispose();
     }
