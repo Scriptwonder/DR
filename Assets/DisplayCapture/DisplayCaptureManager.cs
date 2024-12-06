@@ -28,6 +28,9 @@ namespace Anaglyph.DisplayCapture
 		public UnityEvent onStopped = new();
 		public UnityEvent onNewFrame = new();
 
+		public GameObject welcomeDialog;
+		public GameObject loadingText;
+
 		private unsafe sbyte* imageData;
 		private int bufferSize;
 
@@ -108,8 +111,9 @@ namespace Anaglyph.DisplayCapture
 			onStarted.Invoke();
 			imageData = androidInterface.GetByteBuffer();
 
-			GameObject ui = GameObject.Find("UI");
-			ui.SetActive(false);
+			// GameObject ui = GameObject.Find("UI");
+			welcomeDialog.SetActive(false);
+			loadingText.SetActive(true);
 			// GameObject dr = GameObject.Find("DR");
 			// DRmanager drManager = dr.GetComponent<DRmanager>();
 			// drManager.pipeline();
@@ -123,6 +127,7 @@ namespace Anaglyph.DisplayCapture
 		private unsafe void OnNewFrameAvailable()
 		{
 			if (imageData == default) return;
+			loadingText.SetActive(false);
 			screenTexture.LoadRawTextureData((IntPtr)imageData, bufferSize);
 			screenTexture.Apply();
 

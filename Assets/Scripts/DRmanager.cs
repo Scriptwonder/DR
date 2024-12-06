@@ -153,7 +153,7 @@ public class DRmanager : MonoBehaviour
         //Debug.Log(box.centerX/640f + " " + box.centerY/640f + " " + box.width/640f + " " + box.height/640f);
         // Debug.Log(box.centerX/4128f + " " + box.centerY/2208f + " " + box.width/4128f + " " + box.height/2208f);     
         Vector3 worldCoordinate = depthCast.GetWorldSpaceCoordinate(new Vector2(box.centerX/4128f + 0.5f, -box.centerY/2208f + 0.5f));
-        GameObject panel = Instantiate(boundingBoxPrefab, new Vector3(box.centerX/4128f + cam.gameObject.transform.position.x, -box.centerY/2208f + cam.gameObject.transform.position.y, worldCoordinate.z), Quaternion.identity);
+        GameObject panel = Instantiate(boundingBoxPrefab, new Vector3(box.centerX/4128f * 3 - 0.2f + cam.gameObject.transform.position.x, -box.centerY/2208f * 3 + cam.gameObject.transform.position.y + 0.1f, worldCoordinate.z), Quaternion.identity);
         panel.transform.SetParent(parentTrans.transform);
         panel.name = box.label + n;
         

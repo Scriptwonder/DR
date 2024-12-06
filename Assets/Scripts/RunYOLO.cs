@@ -207,11 +207,13 @@ public class RunYOLO : MonoBehaviour
             };
             //DrawBox(box, n);
             //Debug.Log(box.centerX + " " + box.centerY + " " + box.width + " " + box.height);
-            text.text += "Box label: " + box.label + " length: " + box.label.Length + "\n";  
-            if (box.label != "keyboard" || box.label != "mouse" || box.label != "tv monitor") {
+            string lbl = box.label.Substring(0, box.label.Length - 1);
+            text.text += "Box label: " + lbl + " length: " + lbl.Length + "\n";  
+            if (lbl != "keyboard" && lbl != "mouse" && lbl != "tv monitor") {
                 text.text += "draw\n"; 
                 DRmanager.Instance.drawBox(box, n);
             }
+            // DRmanager.Instance.drawBox(box, n);
             // DrawBox(box, n);
         }
         output.Dispose();
